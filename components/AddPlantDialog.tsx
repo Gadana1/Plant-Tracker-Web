@@ -4,9 +4,20 @@ import AddPlant from './AddPlant'
 
 export default function AddPlantDialog(props: {
   isOpen: boolean
-  setIsOpen: (state: boolean) => void
+  onCancel: () => void
+  onSuccess: () => void
 }) {
   const [submit, setSubmit] = React.useState(false)
+
+  /**
+   * Add plant completed
+   */
+  const onComplete = (status: boolean) => {
+    setSubmit(false)
+    if (status) {
+      props.onSuccess()
+    }
+  }
 
   return (
     <Modal
@@ -26,10 +37,10 @@ export default function AddPlantDialog(props: {
         </Text>
       </Modal.Header>
       <Modal.Body>
-        <AddPlant submit={submit} onComplete={() => props.setIsOpen(false)} />
+        <AddPlant submit={submit} onComplete={onComplete} />
       </Modal.Body>
       <Modal.Footer>
-        <Button auto flat color="error" onClick={() => props.setIsOpen(false)}>
+        <Button auto flat color="error" onClick={props.onCancel}>
           Close
         </Button>
         <Button

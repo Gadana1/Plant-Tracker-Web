@@ -1,38 +1,91 @@
-import { Input, Row, Textarea } from '@nextui-org/react'
+import { Input, Text } from '@nextui-org/react'
 import Image from 'next/image'
-import React, { useEffect, useState } from 'react'
-import dynamic from "next/dynamic";
-import MarkdownIt from 'markdown-it';
+import React, { ChangeEvent, useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
+import MarkdownIt from 'markdown-it'
 // Import MD editor dynamicaly
 const MdEditor = dynamic(() => import('react-markdown-editor-lite'), {
   ssr: false,
-});
+})
 // Import MD editor style manually
-import 'react-markdown-editor-lite/lib/index.css';
+import 'react-markdown-editor-lite/lib/index.css'
+import { Plant } from '../models/Plant'
+import { ADD_PLANT } from '../services/plant'
+import { Failed, Success } from '../models/Generic'
+import { FILE_MAX_SIZE } from '../utils/constants'
 
 // Init MD parser
-const mdParser = new MarkdownIt(/* Markdown-it options */);
+const mdParser = new MarkdownIt(/* Markdown-it options */)
 
 export default function AddPlant(props: {
   submit: boolean
-  onComplete: () => void
+  onComplete: (status: boolean) => void
 }) {
+  const [error, setError] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('Failed to add plant')
   const [name, setName] = useState('')
   const [species, setSpecies] = useState('')
   const [instuctions, setInstructions] = useState('')
-  const [image, setImage] = useState(null)
+  const [image, setImage] = useState()
   const [imageFileURL, setImageFileURL] = useState('')
 
   /**
    * Upload image to client
    * @param event
    */
-  const uploadToClient = (event: any) => {
+  const uploadToClient = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      const i = event.target.files[0]
-      setImage(i)
-      setImageFileURL(URL.createObjectURL(i))
+      const file = event.target.files[0]
+
+      // Validate size
+      if(file.size > FILE_MAX_SIZE) {
+        showError(`File is must be less than ${Math.floor(FILE_MAX_SIZE/(1000*1000))}mb`)
+        return;
+      }
+
+      setImage(Object(file))
+      setImageFileURL(URL.createObjectURL(file))
     }
+  }
+
+  /**
+   * Show error message
+   */
+  const showError = (msg?: string) => {
+    if (msg && typeof msg === 'string') {
+      setErrorMsg(msg)
+    }
+    setError(true)
+    setTimeout(() => {
+      setError(false)
+    }, 5000)
+  }
+
+  /**
+   * Process add plant
+   */
+  const processForm = async (e?: any) => {
+    if (e) e.preventDefault()
+    const done = await doUpload({
+      name: name,
+      species: species,
+      instructions: instuctions,
+      image: image || undefined,
+    })
+      .then(() => {
+        setError(false)
+        return true
+      })
+      .catch((err: any) => {
+        if (err) {
+          if (err.data && err.data.error) showError(err.data.error)
+          else if (err.error) showError(err.error)
+          else if (err.message) showError(err.message)
+          else showError(err)
+        }
+        return false
+      })
+    props.onComplete(done)
   }
 
   useEffect(() => {
@@ -42,22 +95,39 @@ export default function AddPlant(props: {
   })
 
   /**
-   * Process add plant
+   * Perform upload
+   * @param {UploadType} type
+   * @param {Upload} upload
+   * @param {Number} index
+   * @returns {Promise<AxiosResponse<ActionResponse>>}
    */
-  function processForm(e?: any) {
-    if (e) e.preventDefault()
-    // TODO process form
-  }
+  const doUpload = async (plant: Plant): Promise<Success | Failed> => {
+    const form = new FormData()
 
-  /**
-   * Cancel form
-   */
-  function cancel() {
-    props.onComplete()
+    if (plant.image) form.append('image', plant.image)
+    else throw 'Image required'
+
+    if (plant.name) form.append('name', plant.name && plant.name.trim())
+    else throw 'Name required'
+
+    if (plant.species)
+      form.append('species', plant.species && plant.species.trim())
+    else throw 'Species required'
+
+    if (plant.instructions)
+      form.append(
+        'instructions',
+        plant.instructions && plant.instructions.trim()
+      )
+    else throw 'Instructions required'
+
+    return ADD_PLANT(form).catch((err) => {
+      throw err
+    })
   }
 
   return (
-    <form onSubmit={processForm}  className='m-auto lg:w-3/5'>
+    <form onSubmit={processForm} className="m-auto lg:w-3/5">
       {/* Uploader */}
       <div className="bg-grey-lighter mb-4 flex w-full items-center justify-center">
         {imageFileURL && (
@@ -91,38 +161,57 @@ export default function AddPlant(props: {
         </label>
       </div>
 
-      {/* Name */}
-      <Input
-        clearable
-        fullWidth
-        color="primary"
-        size="lg"
-        placeholder="Name"
-        className="mt-4"
-        onChange={(str) => setName(str.target.value || '')}
-      />
-
-      {/* Species */}
-      <Input
-        clearable
-        fullWidth
-        color="primary"
-        size="lg"
-        placeholder="Species"
-        className="mt-4"
-        onChange={(str) => setSpecies(str.target.value || '')}
-      />
-
-      {/* Watering Instructions */}
-      <div className="mt-4"> 
-        <MdEditor 
-        style={{ height: '500px' }} 
-        placeholder="Watering Instructions"
-        className="rounded-xl p-2"
-        renderHTML={text => mdParser.render(text)} onChange={(str) => setInstructions(str.text || '')} />
+      {/* Message */}
+      <div
+        style={{ opacity: error ? 1 : 0 }}
+        className="m-2 rounded-md bg-red-100 p-2 text-center text-sm text-red-500 transition-opacity duration-150"
+        onClick={() => setError(false)}
+      >
+        {errorMsg}
       </div>
 
-      <Row justify="space-between"></Row>
+      {/* Name */}
+      <div className="mt-2">
+        <label htmlFor="p-name">Name</label>
+        <Input
+          required
+          name="p-name"
+          clearable
+          fullWidth
+          color="primary"
+          size="lg"
+          placeholder="Enter Plant Name"
+          onChange={(str) => setName(str.target.value || '')}
+        />
+      </div>
+
+      {/* Species */}
+      <div className="mt-4">
+        <label htmlFor="p-species">Species</label>
+        <Input
+          required
+          name="p-species"
+          clearable
+          fullWidth
+          color="primary"
+          size="lg"
+          placeholder="Enter Plant Species"
+          onChange={(str) => setSpecies(str.target.value || '')}
+        />
+      </div>
+
+      {/* Watering Instructions */}
+      <div className="mt-4">
+        <label htmlFor="p-instructions">Watering Instructions</label>
+        <MdEditor
+          name="p-instructions"
+          style={{ height: '500px' }}
+          placeholder="Enter Plant Watering Instructions"
+          className="rounded-xl bg-gray-100 p-2"
+          renderHTML={(text) => mdParser.render(text)}
+          onChange={(str) => setInstructions(str.text || '')}
+        />
+      </div>
     </form>
   )
 }
