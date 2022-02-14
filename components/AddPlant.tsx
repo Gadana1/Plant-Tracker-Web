@@ -1,4 +1,4 @@
-import { Input, Text } from '@nextui-org/react'
+import { Input } from '@nextui-org/react'
 import Image from 'next/image'
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
@@ -9,6 +9,7 @@ const MdEditor = dynamic(() => import('react-markdown-editor-lite'), {
 })
 // Import MD editor style manually
 import 'react-markdown-editor-lite/lib/index.css'
+
 import { Plant } from '../models/Plant'
 import { ADD_PLANT } from '../services/plant'
 import { Failed, Success } from '../models/Generic'
@@ -205,7 +206,7 @@ export default function AddPlant(props: {
         <label htmlFor="p-instructions">Watering Instructions</label>
         <MdEditor
           name="p-instructions"
-          style={{ height: '500px' }}
+          style={{ minHeight: '400px' }}
           placeholder="Enter Plant Watering Instructions"
           className="rounded-xl bg-gray-100 p-2"
           renderHTML={(text) => mdParser.render(text)}

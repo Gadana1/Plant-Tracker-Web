@@ -2,7 +2,10 @@ import React from 'react'
 import { Button, Card, Col, Row, Text } from '@nextui-org/react'
 import { Plant } from '../models/Plant'
 
-export default function PlantItem(props: { item: Plant }) {
+export default function PlantItem(props: {
+  item: Plant
+  onSelectPlant: (plant: Plant) => void
+}) {
   return (
     <Card
       className="m-auto border-none"
@@ -40,30 +43,33 @@ export default function PlantItem(props: { item: Plant }) {
               </Col>
             </Row>
           </Col>
-          <Col>
-            <Row
-              className="flex items-center"
-              justify="flex-end"
-              align="center"
-            >
-              <Button
-                flat
-                auto
-                rounded
-                className="text-lime-100"
-                css={{ color: 'rgb(236 252 203)', bg: '#94f9f026' }}
+          {props.item.instructions && props.item.instructions.length > 0 && (
+            <Col>
+              <Row
+                className="flex items-center"
+                justify="flex-end"
+                align="center"
               >
-                <Text
-                  css={{ color: 'inherit' }}
-                  size={12}
-                  weight="bold"
-                  transform="uppercase"
+                <Button
+                  flat
+                  auto
+                  rounded
+                  className="text-lime-100"
+                  css={{ color: 'rgb(236 252 203)', bg: '#94f9f026' }}
+                  onClick={() => props.onSelectPlant(props.item)}
                 >
-                  More
-                </Text>
-              </Button>
-            </Row>
-          </Col>
+                  <Text
+                    css={{ color: 'inherit' }}
+                    size={12}
+                    weight="bold"
+                    transform="uppercase"
+                  >
+                    More
+                  </Text>
+                </Button>
+              </Row>
+            </Col>
+          )}
         </Row>
       </Card.Footer>
     </Card>

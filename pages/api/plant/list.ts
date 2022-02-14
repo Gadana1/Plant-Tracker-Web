@@ -24,14 +24,14 @@ export default function handler(
           id: 2,
           name: 'Cauliflower',
           species: 'Brassica oleracea',
-          instructions: "*2 Times* a day with *12 hours* intervals",
+          instructions: "*3 Times* a day with *8 hours* intervals",
           image: 'https://upload.wikimedia.org/wikipedia/commons/2/25/Cauliflower.JPG'
         },
         {
           id: 3,
           name: 'Pumpkin',
           species: 'Atlantic Giant',
-          instructions: "*2 Times* a day with *12 hours* intervals",
+          instructions: "*4 Times* a day with *6 hours* intervals",
           image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/FrenchMarketPumpkinsB.jpg/525px-FrenchMarketPumpkinsB.jpg'
         }
       ],

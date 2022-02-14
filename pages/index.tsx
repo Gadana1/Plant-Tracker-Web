@@ -12,6 +12,7 @@ import PlantItemList from '../components/PlantItemList'
 import { PlantList } from '../models/Plant'
 import { GOOGLE_FONT_NUNITO, URL_PLANT_LIST } from '../utils/urls'
 import { GET_PLANT_LIST } from '../services/plant'
+import ViewPlantDialog from '../components/ViewPlantDialog'
 
 // SWR params for Plan List
 const plantListFetcher: (url: string) => Promise<PlantList> = (url: string) =>
@@ -31,6 +32,7 @@ const plantListKey = (pageIndex: number, previousPageData: PlantList) => {
 
 const Home: NextPage = () => {
   const [isAddPlantOpen, setAddPlantIsOpen] = useState(false)
+  const [selectedPlant, setSelectedPlant] = useState(null)
   const { data, size, setSize, mutate } = useSWRInfinite(
     plantListKey,
     plantListFetcher
@@ -58,17 +60,9 @@ const Home: NextPage = () => {
         <title>Plant Tracker</title>
         <meta name="description" content="Plant tracker application" />
         <link rel="icon" href="/favicon.ico" />
-        <link
-          href={GOOGLE_FONT_NUNITO}
-          rel="stylesheet"
-        />
+        <link href={GOOGLE_FONT_NUNITO} rel="stylesheet" />
       </Head>
       <Header onClickAdd={() => setAddPlantIsOpen(true)} />
-      <AddPlantDialog
-        isOpen={isAddPlantOpen}
-        onCancel={() => setAddPlantIsOpen(false)}
-        onSuccess={onAddPlant}
-      />
       <main className={styles.main}>
         {data ? (
           totalItems > 0 ? (
@@ -76,7 +70,7 @@ const Home: NextPage = () => {
               <h1 className="ml-3 px-4 py-2 text-3xl">
                 <strong>{totalItems}</strong> results
               </h1>
-              <PlantItemList data={data} />
+              <PlantItemList data={data} onSelectPlant={(plant: any)=> setSelectedPlant(plant)}/>
               <Button
                 ghost
                 flat
@@ -95,6 +89,16 @@ const Home: NextPage = () => {
           <Text h2> Loading ... </Text>
         )}
       </main>
+      <AddPlantDialog
+        isOpen={isAddPlantOpen}
+        onCancel={() => setAddPlantIsOpen(false)}
+        onSuccess={onAddPlant}
+      />
+      <ViewPlantDialog
+        plant={selectedPlant || {}}
+        isOpen={selectedPlant ? true : false}
+        onClose={() => setSelectedPlant(null)}
+      />
       <Footer />
     </div>
   )
