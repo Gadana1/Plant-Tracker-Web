@@ -15,6 +15,7 @@ export default function PlantItem(props: {
       <Card.Body>
         <Card.Image
           showSkeleton
+          autoResize
           src={String(props.item.image)}
           height="100%"
           width="100%"
