@@ -23,6 +23,7 @@ export default function AddPlant(props: {
   onComplete: (status: boolean) => void
 }) {
   const [error, setError] = useState(false)
+  const [processing, setProcessing] = useState(false)
   const [errorMsg, setErrorMsg] = useState('Failed to add plant')
   const [name, setName] = useState('')
   const [species, setSpecies] = useState('')
@@ -67,6 +68,13 @@ export default function AddPlant(props: {
    */
   const processForm = async (e?: any) => {
     if (e) e.preventDefault()
+
+    if(processing) {
+      return;
+    }
+
+    setProcessing(true);
+
     const done = await doUpload({
       name: name,
       species: species,
@@ -86,6 +94,8 @@ export default function AddPlant(props: {
         }
         return false
       })
+      
+    setProcessing(false);
     props.onComplete(done)
   }
 

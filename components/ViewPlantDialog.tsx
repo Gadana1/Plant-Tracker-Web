@@ -13,27 +13,28 @@ const MdEditor = dynamic(() => import('react-markdown-editor-lite'), {
 const mdParser = new MarkdownIt(/* Markdown-it options */)
 
 export default function ViewPlantDialog(props: {
-  plant: Plant,
+  plant: Plant
   isOpen: boolean
   onClose: () => void
 }) {
-
   return (
     <Modal
       aria-labelledby="modal-title"
       open={props.isOpen}
       onClose={props.onClose}
-      className='m-4'
+      className="m-4"
     >
-    <MdEditor
-        style={{ minHeight: '400px' }}
-        className="rounded-t-xl bg-gray-100 "
-        renderHTML={(text) => mdParser.render(text)}
-        value={props.plant.instructions}
-        readOnly
-        autoFocus
-        view={{menu:false, md: false, html: true}}
-      />
+      <div className="overflow-y-scroll" style={{ maxHeight: '80vh' }}>
+        <MdEditor
+          style={{ minHeight: '400px' }}
+          className="rounded-t-xl bg-gray-100"
+          renderHTML={(text) => mdParser.render(text)}
+          value={props.plant.instructions}
+          readOnly
+          autoFocus
+          view={{ menu: false, md: false, html: true }}
+        />
+      </div>
       <Modal.Footer>
         <Button auto flat color="error" onClick={props.onClose}>
           Close
