@@ -31,7 +31,7 @@ const Home: NextPage = () => {
   const [selectedPlant, setSelectedPlant] = useState(null)
   const [query, setQuery] = useState('')
   const [searching, setSearching] = useState(false)
-  const { data, size, setSize, mutate } = useSWRInfinite(
+  const { isValidating, data, size, setSize, mutate } = useSWRInfinite(
     (index: number, prev: PlantList) => plantListKey(index, prev),
     ({ next }) => plantListFetcher(query, next)
   )
@@ -49,21 +49,21 @@ const Home: NextPage = () => {
    */
   const onAddPlant = async () => {
     setAddPlantIsOpen(false)
-    setSearching(true);
+    setSearching(true)
     await mutate()
-    setSearching(false);
+    setSearching(false)
   }
 
   /**
    * On Search plant completed - Mutate list
    */
   const onSearchPlant = async (event: ChangeEvent<FormElement>) => {
-    if (searching) return;
-    setSearching(true);
+    if (searching) return
+    setSearching(true)
     setTimeout(() => {
-      setQuery(String(event.target.value));
-      mutate();
-      setSearching(false);
+      setQuery(String(event.target.value))
+      mutate()
+      setSearching(false)
     }, 500)
   }
 
@@ -71,10 +71,10 @@ const Home: NextPage = () => {
    * On Load More Plants completed - Mutate list
    */
   const onLoadMorePlant = async () => {
-    if (searching) return;
-    setSearching(true);
-    await setSize(size + 1);
-    setSearching(false);
+    if (searching) return
+    setSearching(true)
+    await setSize(size + 1)
+    setSearching(false)
   }
 
   return (
@@ -86,20 +86,37 @@ const Home: NextPage = () => {
         <link href={GOOGLE_FONT_NUNITO} rel="stylesheet" />
       </Head>
       <Header onSearch={onSearchPlant} />
-      <div style={{opacity: searching || !data ? 1 : 0}} className='flex justify-center mt-3 z-10 fixed top-20 left-0 right-0' ><Loading type='gradient' color='success'  css={{margin:'auto'}} /></div>
+      <div
+        style={{ opacity: searching || isValidating ? 1 : 0 }}
+        className="fixed top-20 left-0 right-0 z-10 mt-3 flex justify-center"
+      >
+        <Loading type="gradient" color="success" css={{ margin: 'auto' }} />
+      </div>
       <main className="flex min-h-screen items-center justify-center p-3 md:mx-auto">
         {data ? (
           totalItems > 0 ? (
             <div className="p-3">
               <PlantItemList data={data} onSelectPlant={(plant: any) => setSelectedPlant(plant)} />
-              <Button disabled={searching} ghost flat ripple onClick={onLoadMorePlant} color="success" className="mx-auto my-2">
-                Load More
+              <Button
+                disabled={searching}
+                ghost={!searching && !isValidating}
+                flat
+                ripple
+                onClick={onLoadMorePlant}
+                color="success"
+                className="mx-auto my-2"
+              >
+                {searching || isValidating ? 'Loading' : 'Load More'}
               </Button>
             </div>
           ) : (
             <Text h2> No data Available </Text>
           )
-        ) : ''}
+        ) : !isValidating ? (
+          'Failed to load data'
+        ) : (
+          ''
+        )}
       </main>
       <AddPlantDialog isOpen={isAddPlantOpen} onCancel={() => setAddPlantIsOpen(false)} onSuccess={onAddPlant} />
       <ViewPlantDialog
