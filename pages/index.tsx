@@ -18,6 +18,7 @@ import { PlusCircleIcon } from '@heroicons/react/solid'
 // SWR params for Plan List
 const plantListFetcher = (query: string, page: number): Promise<PlantList> => GET_PLANT_LIST(query, page)
 const plantListKey = (index: number, prev: PlantList): { next: number; current: number } | null => {
+  // console.log("Plant key index", index)
   if (prev && (!prev.data || prev.data.length === 0)) return null
   else if (index === 0) return { next: 0, current: 0 }
   return {
@@ -30,10 +31,12 @@ const Home: NextPage = () => {
   const [isAddPlantOpen, setAddPlantIsOpen] = useState(false)
   const [selectedPlant, setSelectedPlant] = useState(null)
   const [query, setQuery] = useState('')
-  const [searching, setSearching] = useState(false)
   const { isValidating, data, size, setSize, mutate } = useSWRInfinite(
     (index: number, prev: PlantList) => plantListKey(index, prev),
-    ({ next }) => plantListFetcher(query, next)
+    ({ next }) => {
+      console.log('Plant fetcher next', next)
+      return plantListFetcher(query, next)
+    }
   )
 
   // We can now calculate the number of all items
@@ -49,21 +52,17 @@ const Home: NextPage = () => {
    */
   const onAddPlant = async () => {
     setAddPlantIsOpen(false)
-    setSearching(true)
     await mutate()
-    setSearching(false)
   }
 
   /**
    * On Search plant completed - Mutate list
    */
   const onSearchPlant = async (event: ChangeEvent<FormElement>) => {
-    if (searching) return
-    setSearching(true)
+    if (isValidating) return
     setTimeout(() => {
       setQuery(String(event.target.value))
       mutate()
-      setSearching(false)
     }, 500)
   }
 
@@ -71,10 +70,8 @@ const Home: NextPage = () => {
    * On Load More Plants completed - Mutate list
    */
   const onLoadMorePlant = async () => {
-    if (searching) return
-    setSearching(true)
+    if (isValidating) return
     await setSize(size + 1)
-    setSearching(false)
   }
 
   return (
@@ -87,7 +84,7 @@ const Home: NextPage = () => {
       </Head>
       <Header onSearch={onSearchPlant} />
       <div
-        style={{ opacity: searching || isValidating ? 1 : 0 }}
+        style={{ opacity: isValidating ? 1 : 0 }}
         className="fixed top-20 left-0 right-0 z-10 mt-3 flex justify-center"
       >
         <Loading type="gradient" color="success" css={{ margin: 'auto' }} />
@@ -98,15 +95,15 @@ const Home: NextPage = () => {
             <div className="p-3">
               <PlantItemList data={data} onSelectPlant={(plant: any) => setSelectedPlant(plant)} />
               <Button
-                disabled={searching}
-                ghost={!searching && !isValidating}
+                disabled={isValidating}
+                ghost={!isValidating}
                 flat
                 ripple
                 onClick={onLoadMorePlant}
                 color="success"
                 className="mx-auto my-2"
               >
-                {searching || isValidating ? 'Loading' : 'Load More'}
+                {isValidating ? 'Loading' : 'Load More'}
               </Button>
             </div>
           ) : (

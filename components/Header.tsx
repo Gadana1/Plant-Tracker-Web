@@ -6,7 +6,7 @@ export const Header = (props: { onSearch: (e: ChangeEvent<FormElement>) => void 
 
   return (
     <div className="sticky top-0 z-10 w-full bg-white px-4 py-4 shadow-sm">
-      <Row justify="space-between" align="center" className="container mx-auto">
+      <Row justify="space-between" align="center" className="p-2 mx-auto">
         <Col span={searchToggled ? 0 : 4} className="px-4 transition-all duration-200">
           <a href="#" className="flex">
             <h1 className="text-left text-3xl font-semibold text-lime-700">Xplants</h1>

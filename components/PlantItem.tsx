@@ -10,7 +10,7 @@ export default function PlantItem(props: {
     <Card
       className="m-auto border-none"
       cover
-      css={{ minWidth: '250px', maxWidth: '500px', height: '300px', p: 0 }}
+      css={{ minWidth: '250px', maxWidth: '450px', height: '250px', p: 0 }}
     >
       <Card.Body>
         <Card.Image
