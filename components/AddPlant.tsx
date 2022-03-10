@@ -18,10 +18,7 @@ import { FILE_MAX_SIZE } from '../utils/constants'
 // Init MD parser
 const mdParser = new MarkdownIt(/* Markdown-it options */)
 
-export default function AddPlant(props: {
-  submit: boolean
-  onComplete: (status: boolean) => void
-}) {
+export default function AddPlant(props: { submit: boolean; onComplete: (status: boolean) => void }) {
   const [error, setError] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [errorMsg, setErrorMsg] = useState('Failed to add plant')
@@ -40,9 +37,9 @@ export default function AddPlant(props: {
       const file = event.target.files[0]
 
       // Validate size
-      if(file.size > FILE_MAX_SIZE) {
-        showError(`File is must be less than ${Math.floor(FILE_MAX_SIZE/(1000*1000))}mb`)
-        return;
+      if (file.size > FILE_MAX_SIZE) {
+        showError(`File is must be less than ${Math.floor(FILE_MAX_SIZE / (1000 * 1000))}mb`)
+        return
       }
 
       setImage(Object(file))
@@ -69,11 +66,11 @@ export default function AddPlant(props: {
   const processForm = async (e?: any) => {
     if (e) e.preventDefault()
 
-    if(processing) {
-      return;
+    if (processing) {
+      return
     }
 
-    setProcessing(true);
+    setProcessing(true)
 
     const done = await doUpload({
       name: name,
@@ -94,22 +91,22 @@ export default function AddPlant(props: {
         }
         return false
       })
-      
-    setProcessing(false);
+
+    setProcessing(false)
     props.onComplete(done)
   }
 
+  // Trigger effect ONLY if 'submit' value has changed
+  // (This is to fix duplicate event issue)
   useEffect(() => {
     if (props.submit) {
       processForm()
     }
-  })
+  }, [props.submit])
 
   /**
    * Perform upload
-   * @param {UploadType} type
-   * @param {Upload} upload
-   * @param {Number} index
+   * @param {Plant} plant
    * @returns {Promise<AxiosResponse<ActionResponse>>}
    */
   const doUpload = async (plant: Plant): Promise<Success | Failed> => {
@@ -121,15 +118,10 @@ export default function AddPlant(props: {
     if (plant.name) form.append('name', plant.name && plant.name.trim())
     else throw 'Name required'
 
-    if (plant.species)
-      form.append('species', plant.species && plant.species.trim())
+    if (plant.species) form.append('species', plant.species && plant.species.trim())
     else throw 'Species required'
 
-    if (plant.instructions)
-      form.append(
-        'instructions',
-        plant.instructions && plant.instructions.trim()
-      )
+    if (plant.instructions) form.append('instructions', plant.instructions && plant.instructions.trim())
     else throw 'Instructions required'
 
     return ADD_PLANT(form).catch((err) => {
@@ -142,33 +134,16 @@ export default function AddPlant(props: {
       {/* Uploader */}
       <div className="bg-grey-lighter mb-4 flex w-full items-center justify-center">
         {imageFileURL && (
-          <Image
-            src={imageFileURL}
-            width={200}
-            height={200}
-            objectFit="cover"
-            alt=""
-            className="m-auto rounded-2xl"
-          />
+          <Image src={imageFileURL} width={200} height={200} objectFit="cover" alt="" className="m-auto rounded-2xl" />
         )}
       </div>
       <div className="bg-grey-lighter flex  w-full items-center justify-center">
         <label className="text-blue flex w-40 cursor-pointer flex-col items-center rounded-lg border border-gray-50 bg-white px-2 py-3 uppercase shadow-md ">
-          <svg
-            className="h-5 w-5"
-            fill="currentColor"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-          >
+          <svg className="h-5 w-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
             <path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4-4-4 4h3v3h2v-3z" />
           </svg>
           <span className="mt-2 text-xs leading-normal">Upload Image</span>
-          <input
-            type="file"
-            name="image"
-            className="hidden"
-            onChange={uploadToClient}
-          />
+          <input type="file" name="image" className="hidden" onChange={uploadToClient} />
         </label>
       </div>
 
